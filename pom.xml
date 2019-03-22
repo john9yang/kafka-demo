@@ -10,6 +10,7 @@
 
     <properties>
         <spring.version>5.1.5.RELEASE</spring.version>
+        <spring.kafka.version>2.2.4.RELEASE</spring.kafka.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.complier.source>1.8</maven.complier.source>
         <maven.complier.target>1.8</maven.complier.target>
@@ -23,6 +24,12 @@
             <groupId>org.springframework</groupId>
             <artifactId>spring-context</artifactId>
             <version>${spring.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.kafka</groupId>
+            <artifactId>spring-kafka</artifactId>
+            <version>${spring.kafka.version}</version>
         </dependency>
 
         <dependency>
