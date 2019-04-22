@@ -46,7 +46,8 @@ public class StockStatsExample {
         // creating an AdminClient and checking the number of brokers in the cluster, so I'll know how many replicas we want...
         AdminClient ac = AdminClient.create(props);
         DescribeClusterResult dcr = ac.describeCluster();
-        int clusterSize = dcr.nodes().get().size();
+//        int clusterSize = dcr.nodes().get().size();
+        int clusterSize = 1;
         System.out.println("clusterSize:"+clusterSize);
         if (clusterSize<3)
             props.put("replication.factor",clusterSize);
@@ -54,12 +55,20 @@ public class StockStatsExample {
             props.put("replication.factor",3);
 
         StreamsBuilder builder = new StreamsBuilder();
-
         KStream<String, Trade> source = builder.stream(Constants.STOCK_TOPIC);
+
+//        KStream<Windowed<String>, TradeStats> stats = source
+//                .groupByKey()
+//                .windowedBy(TimeWindows.of(Duration.ofMillis(5000)).advanceBy(Duration.ofMillis(1000)))
+//                .<TradeStats>aggregate(() -> new TradeStats(),(k, v, tradestats) -> tradestats.add(v),
+//                        Materialized.<String, TradeStats, WindowStore<Bytes, byte[]>>as("trade-aggregates")
+//                                .withValueSerde(new TradeStatsSerde()))
+//                .toStream()
+//                .mapValues((trade) -> trade.computeAvgPrice());
 
         KStream<Windowed<String>, TradeStats> stats = source
                 .groupByKey()
-                .windowedBy(TimeWindows.of(Duration.ofMillis(5000)).advanceBy(Duration.ofMillis(1000)))
+                .windowedBy(TimeWindows.of(5000).advanceBy(1000))
                 .<TradeStats>aggregate(() -> new TradeStats(),(k, v, tradestats) -> tradestats.add(v),
                         Materialized.<String, TradeStats, WindowStore<Bytes, byte[]>>as("trade-aggregates")
                                 .withValueSerde(new TradeStatsSerde()))

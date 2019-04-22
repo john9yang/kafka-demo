@@ -24,6 +24,7 @@ public class TradeStats {
         if (!this.type.equals(trade.type) || !this.ticker.equals(trade.ticker))
             throw new IllegalArgumentException("Aggregating stats for trade type " + this.type + " and ticker " + this.ticker + " but recieved trade of type " + trade.type +" and ticker " + trade.ticker );
 
+        System.out.println("trade:"+trade);
         if (countTrades == 0) this.minPrice = trade.price;
 
         this.countTrades = this.countTrades+1;

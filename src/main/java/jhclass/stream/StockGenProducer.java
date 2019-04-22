@@ -1,10 +1,12 @@
 package jhclass.stream;
 
 import jhclass.model.Trade;
+import jhclass.serde.JsonDeserializer;
 import jhclass.serde.JsonSerializer;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
+import org.apache.kafka.streams.StreamsConfig;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -30,16 +32,24 @@ public class StockGenProducer {
         });
 
         JsonSerializer<Trade> tradeSerializer = new JsonSerializer<>();
+        JsonDeserializer<Trade> tradeDeserializer = new JsonDeserializer<>();
 
         // Configuring producer
-        Properties props;
-        if (args.length==1)
-            props = LoadConfigs.loadConfig(args[0]);
-        else
-            props = LoadConfigs.loadConfig();
+//        Properties props;
+//        if (args.length==1)
+//            props = LoadConfigs.loadConfig(args[0]);
+//        else
+//            props = LoadConfigs.loadConfig();
 
+        Properties props = new Properties();
+//        props.put(StreamsConfig.APPLICATION_ID_CONFIG, "stockgenproducer");
+        props.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG,Constants.BROKER);
         props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
         props.put("value.serializer", tradeSerializer.getClass().getName());
+        //props.put("key.deserializer","org.apache.kafka.common.serialization.StringDeserializer");
+        //props.put("value.deserializer",tradeDeserializer.getClass().getName());
+        props.put("zk.connect","192.168.56.101:2181");
+        props.put("auto.create.topics.enable","false");
 
         // Starting producer
         producer = new KafkaProducer<>(props);
@@ -72,12 +82,14 @@ public class StockGenProducer {
                 // Note that we are using ticker as the key - so all asks for same stock will be in same partition
                 ProducerRecord<String, Trade> record = new ProducerRecord<>(Constants.STOCK_TOPIC, ticker, trade);
 
+                System.out.println("send:"+record);
                 producer.send(record, (RecordMetadata r, Exception e) -> {
                     if (e != null) {
                         System.out.println("Error producing events");
                         e.printStackTrace();
                     }
                 });
+                //producer.send(record);
 
                 // Sleep a bit, otherwise it is frying my machine
                 Thread.sleep(Constants.DELAY);
